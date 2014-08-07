@@ -15,10 +15,9 @@ fn print_usage() {
 
 fn run_grep(pattern: &String, paths: &[String]) {
   for path in paths.iter() {
-    let (tx, rx) = channel();
-    tx.send((pattern.clone(), path.clone()));
+    let pattern2 = pattern.clone();
+    let path2 = path.clone();
     spawn(proc() {
-      let (pattern2, path2) = rx.recv();
       grep(path2.as_slice(), pattern2.as_slice());
     });
   }
