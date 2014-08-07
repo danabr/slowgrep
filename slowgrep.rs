@@ -4,7 +4,7 @@ use std::os;
 fn main() {
   let args: Vec<String> = os::args();
   match args.as_slice() {
-    [ref _prog, ref pattern, ..paths] => run_grep(pattern.as_slice(), paths),
+    [ref _prog, ref pattern, ..paths] => run_grep(pattern, paths),
     _                                 => print_usage()
   }
 }
@@ -13,9 +13,14 @@ fn print_usage() {
   println!("Usage: slowgrep <pattern> <files ...>");
 }
 
-fn run_grep(pattern: &str, paths: &[String]) {
+fn run_grep(pattern: &String, paths: &[String]) {
   for path in paths.iter() {
-    grep(path.as_slice(), pattern);
+    let (tx, rx) = channel();
+    tx.send((pattern.clone(), path.clone()));
+    spawn(proc() {
+      let (pattern2, path2) = rx.recv();
+      grep(path2.as_slice(), pattern2.as_slice());
+    });
   }
 }
 
