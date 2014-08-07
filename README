@@ -1,0 +1,3 @@
+* One orchestrating task. Owning the file list and managing the grep tasks.
+* One output tasks, whose sole purpose is to output the results.
+* 1-n grep tasks, responsible for finding matching lines
