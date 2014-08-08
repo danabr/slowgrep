@@ -1,3 +1,4 @@
-* One orchestrating task. Owning the file list and managing the grep tasks.
-* One output tasks, whose sole purpose is to output the results.
-* 1-n grep tasks, responsible for finding matching lines
+Communicate between tasks Erlang-style, by only communicating through messages.
+
+The worker tasks claim paths from the orchestrating process until the orchestrating
+task says there are no more paths to claim.
