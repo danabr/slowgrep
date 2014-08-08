@@ -1,3 +1,11 @@
-* One orchestrating task. Owning the file list and managing the grep tasks.
-* One output tasks, whose sole purpose is to output the results.
-* 1-n grep tasks, responsible for finding matching lines
+Playing around with Rust's concurrency primitives by implementing a simple grep.
+
+This grep can only handle utf-8 files, and simple string matching (no regexps).
+It is also considerably slower than the standard grep program.
+
+The purpose is instead to explore various ways of communicating between tasks
+and distributing work load. The common theme is that there are a collection of
+worker tasks that "greps" through the files passed to them from one
+orchestrating task.
+
+Checkout the branches for various experiments.
