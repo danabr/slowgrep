@@ -3,10 +3,14 @@ use std::os;
 use std::sync::deque::{Stealer, BufferPool, Data, Empty, Abort};
 
 fn main() {
-  let args: Vec<String> = os::args();
-  match args.as_slice() {
-    [ref _prog, ref pattern, ..paths] => run_grep(pattern, paths),
-    _                                 => print_usage()
+  let mut args: Vec<String> = os::args();
+  match args.len() {
+    n if n > 1 => {
+      args.shift(); // Program 
+      let pattern = args.shift().unwrap();
+      run_grep(&pattern, box args);
+    }
+    _          => print_usage()
   }
 }
 
@@ -14,11 +18,11 @@ fn print_usage() {
   println!("Usage: slowgrep <pattern> <files ...>");
 }
 
-fn run_grep(pattern: &String, paths: &[String]) {
+fn run_grep(pattern: &String, paths: Box<Vec<String>>) {
   let pool = BufferPool::new();
   let (producer, consumer) = pool.deque();
-  for path in paths.iter() {
-    producer.push(path.clone());
+  for path in paths.move_iter() {
+    producer.push(path);
   }
   for _ in range(0, 3i) {
     let client_consumer = consumer.clone();
