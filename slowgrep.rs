@@ -1,5 +1,6 @@
 use std::io::{File, BufferedReader};
 use std::os;
+use std::sync::deque::{Stealer, BufferPool, Data, Empty, Abort};
 
 fn main() {
   let args: Vec<String> = os::args();
@@ -14,12 +15,28 @@ fn print_usage() {
 }
 
 fn run_grep(pattern: &String, paths: &[String]) {
+  let pool = BufferPool::new();
+  let (producer, consumer) = pool.deque();
   for path in paths.iter() {
-    let pattern2 = pattern.clone();
-    let path2 = path.clone();
+    producer.push(path.clone());
+  }
+  for _ in range(0, 3i) {
+    let client_consumer = consumer.clone();
+    let client_pattern = pattern.clone();
     spawn(proc() {
-      grep(path2.as_slice(), pattern2.as_slice());
+      consume_grep(client_consumer, &client_pattern);
     });
+  }
+}
+
+fn consume_grep(consumer:Stealer<String>, pattern:&String) {
+  let slice = pattern.as_slice();
+  loop {
+    match consumer.steal() {
+      Data(path) => grep(path.as_slice(), slice),
+      Empty => return,
+      Abort => ()
+    }
   }
 }
 
