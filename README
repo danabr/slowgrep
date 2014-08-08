@@ -1,3 +1,2 @@
-* One orchestrating task. Owning the file list and managing the grep tasks.
-* One output tasks, whose sole purpose is to output the results.
-* 1-n grep tasks, responsible for finding matching lines
+The orchestrator process put all strings in a std::sync::deque. All worker
+processes try to steal from this queue.
