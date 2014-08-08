@@ -2,10 +2,14 @@ use std::io::{File, BufferedReader};
 use std::os;
 
 fn main() {
-  let args: Vec<String> = os::args();
-  match args.as_slice() {
-    [ref _prog, ref pattern, ..paths] => run_grep(pattern, paths),
-    _                                 => print_usage()
+  let mut args: Vec<String> = os::args();
+  match args.len() {
+    n if n > 1 => {
+      args.shift(); // program name
+      let pattern = args.shift().unwrap();
+      run_grep(&pattern, box args);
+    }
+    _          => print_usage()
   }
 }
 
@@ -13,7 +17,7 @@ fn print_usage() {
   println!("Usage: slowgrep <pattern> <files ...>");
 }
 
-fn run_grep(pattern: &String, paths: &[String]) {
+fn run_grep(pattern: &String, paths: Box<Vec<String>>) {
   let (parent_tx, parent_rx) = channel();
   let workers = Vec::from_fn(3, |idx| {
     let (child_tx, child_rx): (Sender<Option<String>>, Receiver<Option<String>>) = channel();
@@ -23,10 +27,10 @@ fn run_grep(pattern: &String, paths: &[String]) {
     child_tx
   });
 
-  for path in paths.iter() {
+  for path in paths.move_iter() {
     let idx = parent_rx.recv();
     let worker = workers.get(idx);
-    worker.send(Some(path.clone()));
+    worker.send(Some(path));
   };
   for worker in workers.iter() {
     worker.send(None);
